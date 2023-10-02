@@ -1,4 +1,7 @@
 import { Client, GatewayIntentBits } from 'discord.js';
+import dotEnv from "dotenv"
+// const dotEnv = require('dotenv');
+dotEnv.config();
 const client = new Client({ intents: [GatewayIntentBits.Guilds , GatewayIntentBits.GuildMessages,GatewayIntentBits.MessageContent] });
 
 client.on('messageCreate',(message)=>{
@@ -8,11 +11,11 @@ client.on('messageCreate',(message)=>{
     message.reply({
         content : "Hello there we are working on our project"
     })
-    // console.log(message.content);
+    console.log(message.content);
 });
 
 client.on("interactionCreate",(intraction)=>{
         intraction.reply("its easy..")
 })
 
-client.login("MTE1ODA3MjE1MjgzMTA0NTcwMg.G-GJL9.GlS_Q86Q4xE-bmhnEDts0ioIqn8canAxt0xzgc");
+client.login(process.env.SECREAT_AUTH);

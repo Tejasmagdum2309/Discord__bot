@@ -1,5 +1,8 @@
 import { REST, Routes } from 'discord.js';
+import dotEnv from "dotenv"
 
+// const dotEnv = require('dotenv');
+dotEnv.config();
 const commands = [
   {
     name: 'ping',
@@ -7,7 +10,7 @@ const commands = [
   },
 ];
 
-const rest = new REST({ version: '10' }).setToken("MTE1ODA3MjE1MjgzMTA0NTcwMg.G-GJL9.GlS_Q86Q4xE-bmhnEDts0ioIqn8canAxt0xzgc");
+const rest = new REST({ version: '10' }).setToken(process.env.SECREAT_AUTH);
 
 try {
     console.log('Started refreshing application (/) commands.');
