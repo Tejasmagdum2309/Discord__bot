@@ -11,7 +11,7 @@ const mongoClient = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifie
 
 //TO get starting Date of todays formate
 async function getStartOfDay() {
-   
+
     const startOfDay = new Date(); // Create a new Date object to avoid modifying the original date
 
     // Set hours, minutes, seconds, and milliseconds to zero to get the start of the day
@@ -22,21 +22,19 @@ async function getStartOfDay() {
 
 //logic to know when user updting 
 async function changed_Date(oldDate) {
-    let date1 = new Date();
-    let date2 = new Date(oldDate);
+    const date1 = new Date();
+    const date2 = new Date(oldDate);
     console.log(date1)
     console.log(date2)
-    let timeDiff = date1 - date2;
-    let day = timeDiff / (1000 * 60 * 60 * 24);
+    const timeDiff = date1 - date2;
+    const day = timeDiff / (1000 * 60 * 60 * 24);
     return Math.floor(day);
 }
 
 //Strek str to int convet and return..
 async function strak_Update(oldStrak) {
-    let str = (oldStrak);
-    let numstr = parseInt(str, 10);
+    let numstr = parseInt(oldStrak, 10);
     numstr += 1;
-
     return numstr
 }
 
@@ -63,17 +61,18 @@ async function updateStreak(userId) {
         if (existingData) {
 
             const day = await changed_Date(existingData.timestamp);
-            
+
             //To update task for initial stages and daily...............
             if (day == 1 || existingData.streak == 0) {
 
-               
+
                 let newstreak = await strak_Update(existingData.streak);
                 let neWexistingData = {};
-                if(existingData.streak == 0 && existingData.eligibility == "no"){
-                    neWexistingData = { streak: newstreak, eligibility: "yes",timestamp: await getStartOfDay() };}
-                else{
-                    neWexistingData = {streak: newstreak, timestamp: await getStartOfDay()}
+                if (existingData.streak == 0 && existingData.eligibility == "no") {
+                    neWexistingData = { streak: newstreak, eligibility: "yes", timestamp: await getStartOfDay() };
+                }
+                else {
+                    neWexistingData = { streak: newstreak, timestamp: await getStartOfDay() }
                 }
 
                 await collection.updateOne(
@@ -81,34 +80,25 @@ async function updateStreak(userId) {
                     { $set: neWexistingData }
                 );
 
-                return {streak : newstreak,status:"updated"};
+                return { streak: newstreak, status: "updated" };
             }
 
             else if (day < 1) {
-                return {streak : existingData.streak,status :"alreadyUpdated"}
+                return { streak: existingData.streak, status: "alreadyUpdated" }
             }
             else {
-               
                 let newstreak = await strak_Update(existingData.streak);
-        
                 let neWexistingData = { eligibility: "no", streak: newstreak, timestamp: await getStartOfDay() };
-                
                 await collection.updateOne(
                     existingData,
                     { $set: neWexistingData }
                 );
-
-                return {streak : newstreak,status:"lateUpdate"}
+                return { streak: newstreak, status: "lateUpdate" }
             }
-
-
         }
-       
-        else {
-            return 'notRegistered'
-        }
+        return 'notRegistered'
     } catch (error) {
-        console.error('Error storing message data:', error);
+        error && console.error('Error storing message data:', error);
     } finally {
         // Close the MongoDB connection
         await mongoClient.close();
@@ -118,7 +108,7 @@ async function updateStreak(userId) {
 };
 
 //Creating new user
-async function createNewUser(userId,auser){
+async function createNewUser(userId, auser) {
     try {
         // Connect to the MongoDB database
         await mongoClient.connect();
@@ -137,16 +127,14 @@ async function createNewUser(userId,auser){
 
         // if already present
         if (existingData) {
-               return 'registeredAlready' 
+            return 'registeredAlready'
         }
         // insert a new document into the collection
         else {
-            let date = await getStartOfDay();
-            
+            const date = await getStartOfDay();
             existingData = {
-
                 userId: userId,
-                name : auser,
+                name: auser,
                 eligibility: "no",
                 streak: "0",
                 timestamp: date
@@ -161,12 +149,11 @@ async function createNewUser(userId,auser){
         // Close the MongoDB connection
         await mongoClient.close();
         console.log('MongoDB connection closed');
-
-    }    
+    }
 }
 
 
-async function createNewCompitation(competitionData){
+async function createNewCompitation(competitionData) {
     try {
         await mongoClient.connect();
         console.log('Connected to MongoDB database');
@@ -184,7 +171,7 @@ async function createNewCompitation(competitionData){
     }
 }
 
-async function eligibleUsers(){
+async function eligibleUsers() {
     try {
         // Connect to the MongoDB database
         await mongoClient.connect();
@@ -198,14 +185,14 @@ async function eligibleUsers(){
         // Check if the user's Discord ID already exists in the collection
 
         let users = await collection.find({ eligibility: "yes" }).toArray();
-        
-        if(users){
+
+        if (users) {
             return users;
         }
-        else{
+        else {
             return 'noOneEligible'
         }
-        
+
 
     } catch (error) {
         console.error('Error storing message data:', error);
@@ -214,11 +201,7 @@ async function eligibleUsers(){
         await mongoClient.close();
         console.log('MongoDB connection closed');
 
-    }    
+    }
 }
 
-
-
-
-export { updateStreak,createNewUser,createNewCompitation,eligibleUsers };
-
+export { updateStreak, createNewUser, createNewCompitation, eligibleUsers };
