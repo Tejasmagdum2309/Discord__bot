@@ -1,6 +1,6 @@
 // Require the necessary discord.js classes
 import { Client, Events, GatewayIntentBits, EmbedBuilder } from 'discord.js';
-import { ActionRowBuilder,  ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js' ;
+import { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 
 
 
@@ -58,8 +58,8 @@ client.on("ready", c => {
 // })()
 
 
-async function contest(contestInfo){
-      await createNewCompitation(contestInfo);
+async function contest(contestInfo) {
+    await createNewCompitation(contestInfo);
 }
 
 
@@ -253,15 +253,15 @@ client.on('messageCreate', async (message) => {
                         // Send an embedded message with contest details
                         const embed = new EmbedBuilder()
                             .setTitle('Contest Details')
-                            .addFields({name :'Name', value : `${contestData.name}`},)
-                            .addFields({name : 'Start Date', value : `${contestData.startDate.toDateString()}`})
-                            .addFields({name : 'Duration (in days)', value : `${contestData.durationDays}`});
+                            .addFields({ name: 'Name', value: `${contestData.name}` },)
+                            .addFields({ name: 'Start Date', value: `${contestData.startDate.toDateString()}` })
+                            .addFields({ name: 'Duration (in days)', value: `${contestData.durationDays}` });
                         m.channel.send({ embeds: [embed] });
                     } else {
                         m.channel.send('Invalid input. Please enter a valid number of days.');
                     }
 
-                    daysCollector.stop();console.log(contestData)
+                    daysCollector.stop(); console.log(contestData)
                 });
             });
         });
@@ -270,65 +270,65 @@ client.on('messageCreate', async (message) => {
 
 
 client.on(Events.InteractionCreate, async interaction => {
-	if (!interaction.isChatInputCommand()) return;
+    if (!interaction.isChatInputCommand()) return;
 
-	if (interaction.commandName === 'createcontest') {
-		// Create the modal
-		const modal = new ModalBuilder()
-			.setCustomId('myModal')
-			.setTitle('Contest');
+    if (interaction.commandName === 'createcontest') {
+        // Create the modal
+        const modal = new ModalBuilder()
+            .setCustomId('myModal')
+            .setTitle('Contest');
 
-		// Add components to modal
+        // Add components to modal
 
-		// Create the text input components
-		const contestName = new TextInputBuilder()
-			.setCustomId('contestName')
-		    
-			.setLabel("Contest Name :")
-		   
-			.setStyle(TextInputStyle.Short);
+        // Create the text input components
+        const contestName = new TextInputBuilder()
+            .setCustomId('contestName')
 
-		const contestDate = new TextInputBuilder()
-			.setCustomId('contestDate')
-			.setLabel("Contest Starting Date : (YYYY-MM-DD)")
-		    
-			.setStyle(TextInputStyle.Short);
+            .setLabel("Contest Name :")
+
+            .setStyle(TextInputStyle.Short);
+
+        const contestDate = new TextInputBuilder()
+            .setCustomId('contestDate')
+            .setLabel("Contest Starting Date : (YYYY-MM-DD)")
+
+            .setStyle(TextInputStyle.Short);
 
         const contestPeriod = new TextInputBuilder()
-			.setCustomId('contestPeriod')
-			.setLabel("Number of days :")
-		    
-			.setStyle(TextInputStyle.Short);
+            .setCustomId('contestPeriod')
+            .setLabel("Number of days :")
 
-		// An action row only holds one text input,
-		// so you need one action row per text input.
-		const firstActionRow = new ActionRowBuilder().addComponents(contestName);
-		const secondActionRow = new ActionRowBuilder().addComponents(contestDate);
-		const thirdActionRow = new ActionRowBuilder().addComponents(contestPeriod);
+            .setStyle(TextInputStyle.Short);
 
-		// Add inputs to the modal
-		modal.addComponents(firstActionRow, secondActionRow,thirdActionRow);
+        // An action row only holds one text input,
+        // so you need one action row per text input.
+        const firstActionRow = new ActionRowBuilder().addComponents(contestName);
+        const secondActionRow = new ActionRowBuilder().addComponents(contestDate);
+        const thirdActionRow = new ActionRowBuilder().addComponents(contestPeriod);
 
-		// Show the modal to the user
-		await interaction.showModal(modal);
+        // Add inputs to the modal
+        modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
+
+        // Show the modal to the user
+        await interaction.showModal(modal);
 
         const filter = (interaction) => interaction.customId === `myModal`;
 
         interaction
-        .awaitModalSubmit({filter,time : 30_000})
-        .then((modalInteraction) => {
-            const name = modalInteraction.fields.getTextInputValue('contestName');
-            const date = modalInteraction.fields.getTextInputValue('contestDate');
-            const days = modalInteraction.fields.getTextInputValue('contestPeriod');
+            .awaitModalSubmit({ filter, time: 30_000 })
+            .then((modalInteraction) => {
+                const name = modalInteraction.fields.getTextInputValue('contestName');
+                const date = modalInteraction.fields.getTextInputValue('contestDate');
+                const days = modalInteraction.fields.getTextInputValue('contestPeriod');
 
-            let data = {contestName : name,startDate : date,days : days };
-            console.log(data);
-            modalInteraction.reply("Done ");
-            contest(data).then(()=>{})
-            
+                let data = { contestName: name, startDate: date, days: days };
+                console.log(data);
+                modalInteraction.reply("Done ");
+                contest(data).then(() => { })
 
-        })
-	}
+
+            })
+    }
 });
 
 
