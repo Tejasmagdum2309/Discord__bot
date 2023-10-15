@@ -9,6 +9,33 @@ const mongoURI = process.env.mongoUri;
 
 const mongoClient = new MongoClient(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
+async function formatDate(inputDate){
+    const dateParts = inputDate.split('-'); // Split the input string by '-'
+    const year = dateParts[0];
+    const month = dateParts[1] - 1; // JavaScript months are 0-based, so subtract 1
+    const day = dateParts[2];
+
+    // Create a new Date object with the parsed year, month, and day
+    const formattedDate = new Date(year, month, day);
+
+    // Format the date to the desired string format
+    const formattedString = formattedDate.toISOString();
+
+    return formattedString;
+}
+
+async function calculateEndDate(startDate, numberOfDays) {
+    const startDateObject = new Date(startDate);
+    // Calculate the end date by adding the number of days to the start date
+    const endDateObject = new Date(startDateObject.getTime() + numberOfDays * 24 * 60 * 60 * 1000); // Convert days to milliseconds
+
+    // Format the end date to the desired string format (ISO 8601)
+    const formattedEndDate = endDateObject.toISOString();
+
+    return formattedEndDate;
+}
+
+
 //TO get starting Date of todays formate
 async function getStartOfDay() {
 
@@ -16,7 +43,7 @@ async function getStartOfDay() {
 
     // Set hours, minutes, seconds, and milliseconds to zero to get the start of the day
     startOfDay.setHours(0, 0, 0, 0);
-    console.log(startOfDay)
+    // console.log(startOfDay)
     return startOfDay;
 }
 
@@ -24,8 +51,8 @@ async function getStartOfDay() {
 async function changed_Date(oldDate) {
     const date1 = new Date();
     const date2 = new Date(oldDate);
-    console.log(date1)
-    console.log(date2)
+    // console.log(date1)
+    // console.log(date2)
     const timeDiff = date1 - date2;
     const day = timeDiff / (1000 * 60 * 60 * 24);
     return Math.floor(day);
@@ -161,12 +188,17 @@ async function createNewCompitation(competitionData) {
         const database = mongoClient.db('Discord-Bot');
         const collection = database.collection('competitions');
 
+        competitionData.startDate = await formatDate(competitionData.startDate);
+        competitionData.endDate =  await calculateEndDate(competitionData.startDate,competitionData.days);
+
+
+
         await collection.insertOne(competitionData);
         console.log('Competition data stored in the database:', competitionData);
     } catch (error) {
         console.error('Error storing competition data:', error);
     } finally {
-        await mongoClientClient.close();
+        await mongoClient.close();
         console.log('MongoDB connection closed');
     }
 }
@@ -186,7 +218,7 @@ async function eligibleUsers() {
 
         let users = await collection.find({ eligibility: "yes" }).toArray();
 
-        if (users) {
+        if (!(users.length === 0)) {
             return users;
         }
         else {

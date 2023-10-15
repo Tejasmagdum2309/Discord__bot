@@ -1,18 +1,9 @@
-// Require the necessary discord.js classes
 import { Client, Events, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
-
-
-
-
-// const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
-
-// import {mongoose} from 'mongoose';
-import { updateStreak, createNewUser, createNewCompitation, eligibleUsers } from './mongoDb.js'; // Import the storeMessageData function
+import { updateStreak, createNewUser, createNewCompitation, eligibleUsers } from './mongoDb.js'; 
 
 
 import dotEnv from "dotenv"
-
 dotEnv.config();
 
 // Create a new client instance
@@ -25,37 +16,34 @@ client.on("ready", c => {
 
     );
 
+    const channelId = 'YOUR_CHANNEL_ID';
+
+    // Function to calculate the milliseconds until the next day
+    function millisecondsUntilNextDay() {
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0); // Set the time to the start of the next day
+        return tomorrow - now;
+    }
+
+    // Set up an interval to send a message every day at the start of the day
+    setInterval(async () => {
+        const channel = client.channels.cache.get(channelId);
+        if (channel ) {
+            const registrationEmbed = new EmbedBuilder()
+                .setColor('#00ff00') // Green color
+                .setTitle('Registration Confirmation')
+                .setDescription(`Welcome, ${message.author.username}! You are now registered.`);
+
+            // Send the registration confirmation message
+            await message.channel.send({ embeds: [registrationEmbed] });
+        } else {
+            console.error('Invalid channel ID or channel is not a text channel.');
+        }
+    }, millisecondsUntilNextDay());
 });
 
-// (async()=>{
-//     mongoose.set('strictQuery', false);
-//     await mongoose.connect('mongoURL'); // write mongo yrl here
-//     console.log("mono connected");
-
-//     client.on('messageCreate', message => {
-
-//     if (message.author.bot) return; 
-
-//     const githubUrlRegex = /(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+/;
-
-//     // Check if the message content matches the GitHub URL pattern
-//     if (githubUrlRegex.test(message.content)) {
-//         message.reply('you saved your streak ');
-//     }
-//     else{
-//         message.reply(`${message.author.displayName} please send the github url too`);
-//     }
-
-//     // if (message.content === '!ping') {
-//     //     message.channel.send('Pong!');
-//     // }
-//     // else{message.reply(`hello there ${message.author.displayName}`  );}
-
-//     // console.log(`Received message: ${message}`);
-
-
-// });
-// })()
 
 
 async function contest(contestInfo) {
@@ -63,20 +51,10 @@ async function contest(contestInfo) {
 }
 
 
-
-// Main----------------------------------------------------------------------------------------------------------->>
 client.on('messageCreate', async (message) => {
     // Store message data in the database
     if (message.author.bot) return;
 
-    // if (message.content.length >= 20) {
-    //     let data = await storeMessageData(message.author.id);
-    //     console.log(data);
-    //     message.reply(`${message.author.globalName} ${data}`)
-    // }
-    // else {
-    //     message.reply(`${message.author.globalName} plase send more information about your project so we can update your strek info`);
-    // }
 
 
     // Checkthe user sent the command "reg!ster"
@@ -198,74 +176,7 @@ client.on('messageCreate', async (message) => {
         }
     }
 
-    if (message.content.toLowerCase() === '!createcontest') {
-        const userId = message.author.id;
-        const contestData = {};
-
-        // Ask for contest name
-        await message.channel.send('Please enter the contest name:');
-        const nameFilter = m => m.author.id === userId;
-        const nameCollector = message.channel.createMessageCollector({
-            filter: nameFilter,
-            time: 60000,
-        });
-
-        nameCollector.on('collect', m => {
-            contestData.name = m.content;
-
-            // Ask for contest start date
-            m.channel.send('Please enter the contest start date (YYYY-MM-DD):');
-            nameCollector.stop();
-        });
-
-        nameCollector.on('end', () => {
-            const dateFilter = m => m.author.id === userId;
-            const dateCollector = message.channel.createMessageCollector({
-                filter: dateFilter,
-                time: 60000,
-            });
-
-            dateCollector.on('collect', m => {
-                const startDate = new Date(m.content);
-                if (!isNaN(startDate.getTime())) {
-                    contestData.startDate = startDate;
-
-                    // Ask for contest duration in days
-                    m.channel.send('Please enter the number of days for the contest:');
-                    dateCollector.stop();
-                } else {
-                    m.channel.send('Invalid date format. Please use YYYY-MM-DD.');
-                }
-            });
-
-            dateCollector.on('end', () => {
-                const daysFilter = m => m.author.id === userId;
-                const daysCollector = message.channel.createMessageCollector({
-                    filter: daysFilter,
-                    time: 60000,
-                });
-
-                daysCollector.on('collect', m => {
-                    const days = parseInt(m.content);
-                    if (!isNaN(days) && days > 0) {
-                        contestData.durationDays = days;
-
-                        // Send an embedded message with contest details
-                        const embed = new EmbedBuilder()
-                            .setTitle('Contest Details')
-                            .addFields({ name: 'Name', value: `${contestData.name}` },)
-                            .addFields({ name: 'Start Date', value: `${contestData.startDate.toDateString()}` })
-                            .addFields({ name: 'Duration (in days)', value: `${contestData.durationDays}` });
-                        m.channel.send({ embeds: [embed] });
-                    } else {
-                        m.channel.send('Invalid input. Please enter a valid number of days.');
-                    }
-
-                    daysCollector.stop(); console.log(contestData)
-                });
-            });
-        });
-    }
+    
 });
 
 
@@ -322,8 +233,8 @@ client.on(Events.InteractionCreate, async interaction => {
                 const days = modalInteraction.fields.getTextInputValue('contestPeriod');
 
                 let data = { contestName: name, startDate: date, days: days };
-                console.log(data);
-                modalInteraction.reply("Done ");
+                // console.log(data);
+                modalInteraction.reply("Registraction Completed");
                 contest(data).then(() => { })
 
 

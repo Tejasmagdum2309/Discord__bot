@@ -6,7 +6,7 @@ dotEnv.config();
 const commands = [
   {
     name: 'createcontest',
-    description: 'Eligible users!',
+    description: 'creating new contest!',
   },
 ];
 
